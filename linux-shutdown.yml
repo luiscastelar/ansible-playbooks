@@ -1,0 +1,8 @@
+- hosts: all
+  become: yes         # Ejecutar con privilegios elevados (sudo)
+  gather_facts: yes   # Recopila información del sistema operativo
+  tasks:
+    # --- LÓGICA DE APAGADO (SHUTDOWN) ---
+    # Si tu objetivo NO es actualizar, sino solo apagar, usa este playbook simple:
+    - name: Apagado Controlado
+      community.general.shutdown:

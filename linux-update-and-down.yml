@@ -1,0 +1,21 @@
+- hosts: all
+  become: yes         # Ejecutar con privilegios elevados (sudo)
+  gather_facts: no    # Recopila información del sistema operativo
+  tasks:
+    - name: 🔄 1. Actualizar lista de paquetes
+      ansible.builtin.apt:
+        update_cache: yes
+        cache_valid_time: 3600 # Solo actualizar si ha pasado una hora
+      register: apt_update_status
+      ignore_errors: yes # Permite seguir incluso si la actualización falla
+
+    - name: 📦 2. Aplicar las actualizaciones de todos los paquetes
+      ansible.builtin.apt:
+        upgrade: yes
+        autoremove: yes
+      register: apt_upgrade_status
+
+    # --- LÓGICA DE APAGADO (SHUTDOWN) ---
+    # Si tu objetivo NO es actualizar, sino solo apagar, usa este playbook simple:
+    - name: Apagado Controlado
+      community.general.shutdown:

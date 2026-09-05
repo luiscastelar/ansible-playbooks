@@ -1,0 +1,7 @@
+---
+- name: Verificar la conectividad de los hosts
+  hosts: all             # Cambia 'all' por el grupo específico de hosts que quieres pingear
+  gather_facts: no       # Desactivamos la recolección de hechos ya que no es necesaria solo para un ping
+  tasks:
+    - name: Ejecutar ping de conectividad
+      ansible.builtin.ping:

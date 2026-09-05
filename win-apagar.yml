@@ -1,0 +1,8 @@
+---
+- name: Apagar equipos Windows
+  hosts: sys1
+  gather_facts: no
+
+  tasks:
+    - name: Apagar equipo Windows
+      ansible.windows.win_command: shutdown.exe /s /t 0
