@@ -1,7 +1,55 @@
-# title: Depuración con Ansible
-# description: Realiza una prueba básica de depuración en un grupo de hosts
-- hosts: all
+# title: Get info con Ansible
+# description: Realiza una prueba básica de depuración en un grupo de hosts donde obtiene información de los equipos del inventario
+- name: Show System Facts
+  hosts: all
+  ## By default, gather_facts is set to 'true'
+
   tasks:
-    - name: Print message
+    - name: Display operating system
       debug:
-        msg: Hello Ansible World
+        msg: "Operating System: {{ ansible_facts['distribution'] }} {{ ansible_facts['distribution_version'] }}"
+
+    - name: Display CPU information
+      debug:
+        msg: "CPU: {{ ansible_facts['processor'][1] }} with {{ ansible_facts['processor_cores'] }} cores"
+
+    - name: Display memory information
+      debug:
+        msg: "Total Memory: {{ ansible_facts['memtotal_mb'] }} MB"
+
+    - name: Display Python version
+      debug:
+        msg: "Python version: {{ ansible_facts['python_version'] }}"
+    - name: Mostrar memoria y espacio libre
+      ansible.builtin.debug:
+        msg:
+          memoria_libre: "{{ ansible_facts['memory_mb']['real']['free'] / 1024 }} GB"
+          disco_libre: "{{ ansible_facts['mounts'][0]['size_available'] / 1024 / 1024 / 1024 }} GB"
+
+    - name: Definir recursos disponibles
+      ansible.builtin.set_fact:
+        memoria_libre: "{{ ansible_facts['memory_mb']['real']['free'] /1024 }}"
+        root_libre: >-
+          {{
+            ansible_facts['mounts']
+            | selectattr('mount', 'equalto', '/')
+            | map(attribute='size_available')
+            | first
+            | default(0, true) / 1024 / 1024 / 1024
+          }}
+        home_libre: >-
+          {{
+            ansible_facts['mounts']
+            | selectattr('mount', 'equalto', '/home')
+            | map(attribute='size_available')
+            | first
+            | default(0, true) / 1024 / 1024 / 1024
+          }}
+
+    - name: Mostrar recursos disponibles
+      ansible.builtin.debug:
+        msg:
+          - "Memoria libre: {{ memoria_libre }} GB"
+          - "Espacio libre en /: {{ (root_libre) | round(2) }} GB"
+          - "Espacio libre en /home: {{ (home_libre) | round(2) }} GB"
+
