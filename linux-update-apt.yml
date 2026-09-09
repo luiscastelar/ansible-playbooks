@@ -8,7 +8,8 @@
         pkg:
           - sudo
           - curl
-          - fail2ban
+          - vagrant
+          - incus
         #name: nginx=1.18.0
         state: latest
         update_cache: yes
@@ -16,7 +17,7 @@
     - name: Elimina lista de paquetes
       ansible.builtin.apt:
         pkg:
-          - vagrant
+          - fail2ban
         state: absent
 
     - name: Upgrade the OS (apt-get dist-upgrade)
