@@ -1,0 +1,31 @@
+---
+- name: Asegurar y mantener activo Veyon Service en equipos de alumnos
+  hosts: alumnos
+  gather_facts: no
+#  vars:
+#    ansible_user: "Administrador"
+#    ansible_password: "TuPasswordAdmin"
+#    ansible_connection: winrm
+#    ansible_winrm_server_cert_validation: ignore
+#    ansible_winrm_transport: ntlm
+
+  tasks:
+    - name: Configurar e iniciar el servicio VeyonService
+      ansible.windows.win_service:
+        name: VeyonService
+        start_mode: auto
+        state: started
+
+    - name: Crear Tarea Programada recurrente para reactivar Veyon si es detenido
+      community.windows.win_scheduled_task:
+        name: "MantenerVeyonActivo"
+        description: "Inicia el servicio Veyon si un alumno lo ha desactivado"
+        actions:
+          - path: 'powershell.exe'
+            arguments: '-NoProfile -ExecutionPolicy Bypass -Command "if ((Get-Service -Name VeyonService).Status -ne ''Running'') { Start-Service -Name VeyonService }"'
+        triggers:
+          - type: boot
+            repetition_interval: PT5M  # Se ejecuta cada 5 minutos
+        username: "SYSTEM"
+        state: present
+        enabled: yes
