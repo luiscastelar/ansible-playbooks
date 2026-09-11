@@ -1,53 +1,51 @@
 ---
+# Estado: Playbook probada y funcionando
+# Autor: Luis Ferreira
+# Comentario: 
+#  - El password debe cumplir requisitos de seguridad
+#  - hosts debe coincidir con el aula
+#
 - name: Reemplazar usuario local de Windows 11
-  hosts: windows
+  hosts: sys1
   gather_facts: false
 
   vars:
-    usuario_antiguo: "usuario_viejo"
-    usuario_nuevo: "usuario_nuevo"
+    usuario_antiguo: "Alumno"
+    usuario_nuevo: "Alumno_26"
     password_nuevo: "Cambiar_Esta_Password_123!"
-    nuevo_usuario_es_admin: true
+    nuevo_usuario_es_admin: false
 
   tasks:
-
-    - name: Comprobar si existe el usuario antiguo
-      ansible.windows.win_user:
-        name: "{{ usuario_antiguo }}"
-        state: query
-      register: usuario_existente
 
     - name: Eliminar usuario antiguo
       ansible.windows.win_user:
         name: "{{ usuario_antiguo }}"
         state: absent
-        remove: true
-      when: usuario_existente.exists | default(false)
 
     - name: Eliminar el perfil del usuario antiguo si todavía existe
       ansible.windows.win_powershell:
         script: |
           $username = "{{ usuario_antiguo }}"
-
-          $profile = Get-CimInstance Win32_UserProfile |
-            Where-Object {
+          $profile = Get-CimInstance Win32_UserProfile | Where-Object {
               $_.LocalPath -like "C:\Users\$username"
-            }
-
+          }
           if ($profile) {
               Remove-CimInstance -InputObject $profile
           }
-      when: usuario_existente.exists | default(false)
 
-    - name: Crear nuevo usuario local
+    - name: Crear nuevo usuario local y asegurar que está activo
       ansible.windows.win_user:
         name: "{{ usuario_nuevo }}"
         password: "{{ password_nuevo }}"
         state: present
+        account_disabled: false          # Asegura que la cuenta no esté deshabilitada
+        groups:
+          - Usuarios                     # En Windows en español; usa "Users" si está en inglés
+        groups_action: replace
         password_never_expires: true
         user_cannot_change_password: false
 
-    - name: Añadir nuevo usuario al grupo Administradores
+    - name: Añadir nuevo usuario al grupo Administradores si aplica
       ansible.windows.win_group_membership:
         name: Administradores
         members:
