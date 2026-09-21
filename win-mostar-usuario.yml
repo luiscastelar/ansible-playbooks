@@ -1,0 +1,19 @@
+---
+- name: Deshabilitar y ocultar usuario en la pantalla de inicio de sesión
+  hosts: all
+  gather_facts: false
+  vars:
+    target_user: "Alumno_26"  # Cambia por el usuario deseado
+
+  tasks:
+    - name: Ocultar el usuario de la pantalla de bienvenida (Logon Screen)
+      ansible.windows.win_regedit:
+        path: HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon\SpecialAccounts\UserList
+        name: "{{ target_user }}"
+        data: 1
+        type: dword
+      register: reg_result
+
+    - name: Notificar resultado
+      ansible.builtin.debug:
+        msg: "El usuario {{ target_user }} ha sido ocultado del login."
